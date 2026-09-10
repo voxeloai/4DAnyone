@@ -128,16 +128,20 @@ def run_generate(ctx: JobContext, video: Path, preset: dict, out_dir: Path) -> N
     proc = subprocess.Popen(cmd, cwd=str(REPO), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
     assert proc.stdout is not None
     eta = preset["eta_minutes"] * 60 * 0.55  # generation is roughly half of a job's wall time
+    last_error = None
     for line in proc.stdout:
         line = line.rstrip()
         if not line:
             continue
         ctx.log(f"[4danyone] {line}")
+        if line.startswith("error:") or "Error:" in line or "Traceback" in line:
+            last_error = line
         frac = min(0.95, (time.monotonic() - started) / max(60.0, eta))
         ctx.set_state(progress=round(0.05 + 0.45 * frac, 4), message=line[-160:])
     code = proc.wait()
     if code != 0:
-        raise RuntimeError(f"4DAnyone inference failed (exit {code}); see log")
+        detail = f": {last_error[:300]}" if last_error else "; see log"
+        raise RuntimeError(f"4DAnyone inference failed (exit {code}){detail}")
     if not (out_dir / "cameras.json").is_file():
         raise RuntimeError("4DAnyone finished but cameras.json is missing")
     ctx.log(f"[generate] done in {time.monotonic() - started:.0f}s")
