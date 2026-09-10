@@ -98,7 +98,7 @@ if [ ! -x "$NODE_DIR/bin/node" ]; then
     log "installing node $NODE_VER to $NODE_DIR"
     mkdir -p "$NODE_DIR"
     curl -fsSL "https://nodejs.org/dist/v${NODE_VER}/node-v${NODE_VER}-linux-x64.tar.xz" \
-        | tar -xJ --strip-components=1 -C "$NODE_DIR"
+        | tar -xJ --strip-components=1 --no-same-owner -C "$NODE_DIR"
 fi
 export PATH="$NODE_DIR/bin:$PATH"
 if [ ! -x "$NODE_DIR/bin/splat-transform" ]; then

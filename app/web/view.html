@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Voxelo 4D · viewer</title>
+<meta name="theme-color" content="#0c0c0c" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Montserrat:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/app.css" />
+<link rel="stylesheet" href="/assets/viewer.css" />
+<script type="importmap">
+{ "imports": {
+    "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.22.1/build/playcanvas.mjs",
+    "playcanvas/": "https://cdn.jsdelivr.net/npm/playcanvas@2.22.1/"
+} }
+</script>
+</head>
+<body class="viewer-body">
+<div class="stage bg-dark" id="stage">
+  <canvas id="app" aria-label="4D splat viewer"></canvas>
+
+  <div class="topbar">
+    <a class="pill mono" href="/" id="back">← Gallery</a>
+    <div class="title-block">
+      <div class="vtitle display" id="vtitle">Loading…</div>
+      <div class="vmeta mono" id="vmeta"></div>
+    </div>
+    <div class="topbar-actions">
+      <button class="pill mono" id="share" type="button">Share</button>
+      <button class="pill mono" id="fullscreen" type="button">Fullscreen</button>
+      <button class="pill mono only-mobile" id="settings-toggle" type="button">Settings</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="loader"><span class="spin"></span><span id="loader-text">loading frame 1</span><div class="lbar"><i id="loader-bar"></i></div></div>
+  <div class="overlay hint hidden" id="hint">drag to orbit · scroll or pinch to zoom · two fingers to pan</div>
+  <div class="overlay buffering hidden" id="buffering"><span class="spin"></span>buffering</div>
+  <div class="overlay error hidden" id="error"></div>
+
+  <aside class="panel" id="panel">
+    <div class="ph mono"><span>Background</span><b id="bg-label">dark</b></div>
+    <div class="chips" id="bg-chips">
+      <button type="button" class="chip sel" data-bg="dark" title="Dark"><i style="background:#0c0c0c"></i></button>
+      <button type="button" class="chip" data-bg="cream" title="Cream"><i style="background:#eaeae0"></i></button>
+      <button type="button" class="chip" data-bg="white" title="White"><i style="background:#f4f4ec"></i></button>
+      <button type="button" class="chip" data-bg="ember" title="Ember"><i style="background:#3A0A0A"></i></button>
+      <button type="button" class="chip" data-bg="magma" title="Magma"><i style="background:linear-gradient(135deg,#F00D33 0%,#FB5E01 50%,#F4B71D 100%)"></i></button>
+      <label class="chip custom" title="Custom colour"><input type="color" id="bg-custom" value="#1f2a2f" /><i id="bg-custom-swatch" style="background:#1f2a2f"></i></label>
+    </div>
+    <div class="ph mono" style="margin-top:14px"><span>View</span><b id="fps-label"></b></div>
+    <div class="row-btns">
+      <button type="button" class="mini mono" id="reset-view">Reset view</button>
+      <button type="button" class="mini mono" id="auto-rotate">Auto-rotate: off</button>
+    </div>
+    <div class="ph mono" style="margin-top:14px"><span>Scan</span><b id="engine-label">4D splat</b></div>
+    <dl class="facts mono" id="facts"></dl>
+  </aside>
+
+  <div class="bottombar">
+    <button type="button" class="play" id="play" aria-label="play/pause"><span id="play-icon">❚❚</span></button>
+    <input type="range" id="scrub" min="1" max="1" value="1" step="1" aria-label="frame" />
+    <span class="counter mono" id="counter">000 / 000</span>
+    <select id="speed" class="mono" aria-label="speed">
+      <option value="0.5">0.5×</option>
+      <option value="1" selected>1×</option>
+      <option value="2">2×</option>
+    </select>
+    <button type="button" class="mini mono" id="loopmode">loop</button>
+  </div>
+</div>
+<div class="toast mono" id="toast"></div>
+<script type="module" src="/assets/viewer.js"></script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Voxelo 4D · a person in 4D from one video</title>
+<meta name="description" content="Upload a short portrait video of one person; get a streamable 4D Gaussian splat you can orbit in any browser." />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#eaeae0" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Montserrat:wght@400;500;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <a class="brand" href="/">
+      <svg viewBox="0 0 322.42 369.2" aria-hidden="true"><path fill="currentColor" d="M161.2 0 0 92.3v184.6l161.2 92.3 161.22-92.3V92.3L161.2 0Zm0 42.4 118.5 67.9-118.5 67.9L42.7 110.3 161.2 42.4ZM36.9 141.6l106 60.7v121.4l-106-60.7V141.6Zm142.6 182.1V202.3l106-60.7v121.4l-106 60.7Z"/></svg>
+      <span class="name">Voxelo <span class="lane">4D</span></span>
+    </a>
+    <div class="links mono">
+      <a href="#create" class="active">Create</a>
+      <a href="#jobs">Jobs</a>
+      <a href="#gallery">Gallery</a>
+      <a href="/api/docs" target="_blank" rel="noopener">API</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow mono">4DAnyone <span class="dot">·</span> Spirula Studio <span class="dot">·</span> PlayCanvas <span class="dot">·</span> R&amp;D prototype</div>
+    <h1 class="display">One phone video. <em>A person in 4D.</em></h1>
+    <p class="lede">Upload a five-second portrait clip of one person. We generate <strong>24 synchronised camera views</strong>, reconstruct a Gaussian splat for every moment, and stream the result to any browser or phone as a <strong>4D splat you can orbit</strong>.</p>
+  </header>
+
+  <section id="create">
+    <div class="sec-head"><h2>Create a 4D splat</h2><span class="mono count" id="gpu-label"></span></div>
+    <div id="readiness"></div>
+    <div class="card">
+      <form id="upload-form" class="upload-grid">
+        <div>
+          <label class="drop" id="drop" for="video">
+            <input type="file" id="video" name="video" accept="video/mp4,video/quicktime,video/webm,video/x-matroska,.mp4,.mov,.m4v,.webm,.mkv" />
+            <div class="mono" style="color:var(--accent)">Step 01 · Clip</div>
+            <div class="big">Drop a video here</div>
+            <div class="sub">or tap to choose. Portrait 9:16, one person, full or upper body, at least 5 seconds, steady camera.</div>
+            <div id="file-chip"></div>
+          </label>
+        </div>
+        <div>
+          <div class="field">
+            <label class="mono" for="title">Step 02 · Title</label>
+            <input type="text" id="title" name="title" maxlength="80" placeholder="e.g. Anna, dance take 2" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label class="mono">Step 03 · Preset</label>
+            <div class="presets" id="presets"></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn primary" id="submit" disabled>Create 4D splat</button>
+            <span class="note" id="submit-note">Choose a clip to start.</span>
+          </div>
+          <div class="progress hidden" id="upload-progress" style="margin-top:12px"><i></i></div>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section id="jobs">
+    <div class="sec-head"><h2>Processing</h2><span class="mono count" id="jobs-count"></span></div>
+    <div id="jobs-list"></div>
+  </section>
+
+  <section id="gallery">
+    <div class="sec-head"><h2>Gallery</h2><span class="mono count" id="scans-count"></span></div>
+    <div class="grid" id="scans-grid"></div>
+  </section>
+
+  <footer class="mono">
+    <span>Voxelo</span><span class="sep">·</span>
+    <span>Prototype</span><span class="sep">·</span>
+    <a href="https://github.com/ant-research/4DAnyone" target="_blank" rel="noopener">4DAnyone</a><span class="sep">·</span>
+    <a href="https://github.com/harry7557558/spirula-studio" target="_blank" rel="noopener">Spirula Studio</a><span class="sep">·</span>
+    <a href="https://playcanvas.com" target="_blank" rel="noopener">PlayCanvas 2.22</a>
+  </footer>
+  <p class="notice"><b>Research and evaluation only.</b> 4DAnyone code and checkpoint are Apache-2.0; GVHMR, SMPL-X and the Turbo LoRA carry non-commercial research licences; Spirula Studio is GPLv3. Clips you upload stay on this machine.</p>
+</div>
+<div class="toast mono" id="toast"></div>
+<script type="module" src="/assets/app.js"></script>
+</body>
+</html>
