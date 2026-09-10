@@ -76,11 +76,20 @@ async function main() {
   const scanId = scanIdFromLocation();
   if (!scanId) { showError("No scan id in the URL."); return; }
   let manifest;
-  try {
-    const r = await fetch(`${API}/scans/${scanId}`, { cache: "no-store" });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    manifest = await r.json();
-  } catch (e) { showError(`Could not load scan ${scanId} (${e.message}).`); return; }
+  let lastErr = null;
+  for (let attempt = 0; attempt < 4 && !manifest; attempt++) {
+    try {
+      const r = await fetch(`${API}/scans/${scanId}`, { cache: "no-store" });
+      if (r.status === 404 && attempt >= 1) { lastErr = new Error("no such scan"); break; }
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      manifest = await r.json();
+    } catch (e) {
+      lastErr = e;
+      $("loader-text").textContent = `connecting… (retry ${attempt + 1})`;
+      await new Promise((res) => setTimeout(res, 1200 * (attempt + 1)));
+    }
+  }
+  if (!manifest) { showError(`Could not load scan ${scanId} (${lastErr?.message || "unknown error"}).`); return; }
 
   const base = manifest.base_url || `/scans/${scanId}/`;
   const seq = manifest.sequence;

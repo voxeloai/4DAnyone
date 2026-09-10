@@ -215,15 +215,29 @@ async function refreshScans() {
 }
 
 // ── boot ───────────────────────────────────────────────────────────────────
+const FALLBACK_PRESETS = [
+  { name: "fast", label: "Fast", blurb: "12 views, 16 timesteps, half-resolution training. About 8 minutes.", eta_minutes: 8 },
+  { name: "standard", label: "Standard", blurb: "24 views on one orbit, 30 timesteps, full resolution. About 18 minutes.", eta_minutes: 18, default: true },
+  { name: "full", label: "Full", blurb: "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 45 minutes.", eta_minutes: 45 },
+];
+
+// The RunPod proxy answers 404/timeouts for ~30 s after the API restarts; never let one failed
+// request leave the page half-rendered.
+async function getJSONRetry(url, attempts = 4) {
+  let delay = 1200;
+  for (let i = 0; i < attempts; i++) {
+    try { return await getJSON(url); } catch (e) { if (i === attempts - 1) throw e; await new Promise((r) => setTimeout(r, delay)); delay *= 1.6; }
+  }
+}
+
 (async function boot() {
   wireUpload();
-  try { presets = await getJSON(`${API}/presets`); selectedPreset = (presets.find((p) => p.default) || presets[0] || {}).name || "standard"; } catch (_) { presets = [{ name: "standard", label: "Standard", blurb: "", eta_minutes: 18, default: true }]; }
-  renderPresets();
-  try { health = await getJSON(`${API}/health`); } catch (_) { health = null; }
-  renderReadiness();
-  setInterval(async () => { try { health = await getJSON(`${API}/health`); renderReadiness(); } catch (_) {} }, 30000);
+  presets = FALLBACK_PRESETS; selectedPreset = "standard"; renderPresets();
   refreshJobs();
   refreshScans();
+  getJSONRetry(`${API}/presets`).then((p) => { if (Array.isArray(p) && p.length) { presets = p; if (!presets.some((x) => x.name === selectedPreset)) selectedPreset = (presets.find((x) => x.default) || presets[0]).name; renderPresets(); } }).catch(() => {});
+  getJSONRetry(`${API}/health`).then((h) => { health = h; renderReadiness(); }).catch(() => {});
+  setInterval(async () => { try { health = await getJSON(`${API}/health`); renderReadiness(); } catch (_) {} }, 30000);
   document.querySelectorAll(".nav .links a[href^='#']").forEach((a) => a.addEventListener("click", () => {
     document.querySelectorAll(".nav .links a").forEach((x) => x.classList.remove("active")); a.classList.add("active");
   }));
