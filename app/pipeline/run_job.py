@@ -125,7 +125,7 @@ def run_generate(ctx: JobContext, video: Path, preset: dict, out_dir: Path) -> N
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
     started = time.monotonic()
-    proc = subprocess.Popen(cmd, cwd=str(REPO), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+    proc = subprocess.Popen(cmd, cwd=str(REPO), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
     assert proc.stdout is not None
     eta = preset["eta_minutes"] * 60 * 0.55  # generation is roughly half of a job's wall time
     for line in proc.stdout:
@@ -157,7 +157,7 @@ def run_export(ctx: JobContext, result_dir: Path, seq_dir: Path, preset: dict) -
     ctx.log("[export] " + " ".join(cmd))
     env = dict(os.environ)
     env["PYTHONUNBUFFERED"] = "1"
-    proc = subprocess.Popen(cmd, cwd=str(REPO), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+    proc = subprocess.Popen(cmd, cwd=str(REPO), stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
     assert proc.stdout is not None
     for line in proc.stdout:
         line = line.rstrip()

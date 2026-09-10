@@ -169,7 +169,8 @@ def worker_loop() -> None:
         env["PYTHONUNBUFFERED"] = "1"
         env.setdefault("XDG_RUNTIME_DIR", "/tmp")
         with (JOBS / job_id / "worker.log").open("a") as fh:
-            code = subprocess.call([sys.executable, "-m", "app.pipeline.run_job", job_id], cwd=str(REPO), env=env, stdout=fh, stderr=subprocess.STDOUT)
+            # stdin must NOT be a tty: 4DAnyone's SMPL-X installer prompts interactively when it sees one
+            code = subprocess.call([sys.executable, "-m", "app.pipeline.run_job", job_id], cwd=str(REPO), env=env, stdin=subprocess.DEVNULL, stdout=fh, stderr=subprocess.STDOUT)
         state = read_json(state_path) or {}
         if code != 0 and state.get("status") != "failed":
             state.update(status="failed", error=f"runner exited with code {code}", finished=time.time())

@@ -117,7 +117,7 @@ def train_frame(
     started = time.monotonic()
     env = dict(os.environ)
     env.setdefault("XDG_RUNTIME_DIR", "/tmp")
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
+    proc = subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
     assert proc.stdout is not None
     tail: list[str] = []
     for line in proc.stdout:
