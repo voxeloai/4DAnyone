@@ -104,12 +104,13 @@ def main() -> None:
     q = torch.from_numpy(quats).to(dev)
     scales = torch.from_numpy(np.exp(g["scales"])).to(dev)
     opac = torch.sigmoid(torch.from_numpy(g["opacity"]).to(dev))
-    if g["sh"] is not None:
+    if g["sh"] is not None and int(math.sqrt(g["sh"].shape[1])) ** 2 == g["sh"].shape[1]:
         colors = torch.from_numpy(g["sh"]).to(dev)
         sh_degree = int(math.sqrt(colors.shape[1]) - 1)
     else:
         colors = torch.from_numpy(g["dc"]).to(dev)[:, None, :]
         sh_degree = 0
+    print(f"gaussians {len(xyz)}, sh_degree {sh_degree}, centre {centre.round(3).tolist()}, extent {extent:.3f}, rig radius {radius:.3f}", flush=True)
 
     W, H = args.width, args.height
     fy = 0.5 * H / math.tan(math.radians(args.fov_deg) / 2)
@@ -145,7 +146,7 @@ def main() -> None:
         q_t = torch.stack([w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2, w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2, w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2, w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2], 1)
         viewmats = torch.from_numpy(np.stack([np.linalg.inv(c) for c in cams])).float().to(dev)
         with torch.no_grad():
-            rgb, alpha, _ = rasterization(m_t, q_t / q_t.norm(dim=1, keepdim=True), scales, opac, colors, viewmats, Ks, W, H, sh_degree=sh_degree, render_mode="RGB", backgrounds=torch.zeros(len(cams), 3, device=dev))
+            rgb, alpha, _ = rasterization(m_t, q_t / q_t.norm(dim=1, keepdim=True), scales, opac, colors, viewmats, Ks, W, H, sh_degree=sh_degree, render_mode="RGB")
         images = tuple((rgb[i].clamp(0, 1).cpu().numpy() * 255).astype(np.uint8) for i in range(len(cams)))
         masks = (alpha[..., 0] > 0.5).cpu().numpy()
         work = out / f".{frame_dir.name}.tmp"

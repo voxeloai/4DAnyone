@@ -67,6 +67,24 @@ def build_command(
         "--steps-per-save", str(iterations),
         "--save-only-latest-checkpoint", "1",
     ]
+    # Spirula's defaults assume a 30k-step run (splats start growing at 500, stop 2500 before the end,
+    # regulariser warm-ups of 6k-12k). Compress the schedule so a 1.5k-3.5k step run still densifies.
+    k = max(iterations, 500) / 30000.0
+    refine_start = max(150, int(iterations * 0.12))
+    refine_stop_before_end = max(200, int(iterations * 0.2))
+    cmd += [
+        "--refine-start-iter", str(refine_start),
+        "--refine-every", "50",
+        "--refine-stop-num-iter", str(refine_stop_before_end),
+        "--refine-stop-iter", str(iterations),
+        "--growth-factor", "1.15",
+        "--min-init-fraction", "0.2",
+        "--distortion-reg-warmup", str(max(100, int(6000 * k * 2))),
+        "--normal-reg-warmup", str(max(100, int(6000 * k * 2))),
+        "--alpha-reg-warmup", str(max(200, int(12000 * k * 2))),
+        "--median-warmup", str(max(100, int(6000 * k * 2))),
+        "--background-noise-warmup", str(max(100, int(2000 * k * 2))),
+    ]
     if res_divisor and res_divisor > 1:
         cmd += ["--train-resolution-divisor", str(res_divisor)]
     if extra:

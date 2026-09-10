@@ -140,11 +140,17 @@ def pack_sequence(
             gaussians.append(len(xyz))
     framing = framing_from_positions(read_ply_positions(plys[0]))
 
-    # poster + preview from the front target view (camera 00 = yaw 0)
+    # poster + preview from the front target view (camera 00 = yaw 0); synthetic runs fall back to the first frame image
     front = result_dir / "videos" / "dense" / "00.mp4"
     if front.is_file():
         write_poster(front, scan_dir / "poster.jpg")
         shutil.copyfile(front, scan_dir / "preview.mp4")
+    else:
+        first_image = result_dir / "frame_0001" / "images" / "00.png"
+        if first_image.is_file():
+            image = Image.open(first_image).convert("RGB")
+            image.thumbnail((900, 900))
+            image.save(scan_dir / "poster.jpg", format="JPEG", quality=86, optimize=True)
 
     fps_num, fps_den = sequence_summary.get("source_fps", [25, 1])
     source_fps = fps_num / fps_den
