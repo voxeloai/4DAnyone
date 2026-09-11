@@ -33,6 +33,18 @@ PRESETS: dict[str, dict] = {
         "res_divisor": 1,
         "eta_minutes": 40,
     },
+    "wide": {
+        "label": "Wide",
+        "blurb": "48 views on one orbit (7.5 degree spacing), 30 timesteps, full resolution. About 70 minutes.",
+        "views_per_layer": 48,
+        "layer_pitches": [15],
+        "timesteps": 30,
+        "iterations": 2500,
+        "cap_max": 300_000,
+        "sh_degree": 0,
+        "res_divisor": 1,
+        "eta_minutes": 70,
+    },
     "full": {
         "label": "Full",
         "blurb": "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 90 minutes.",

@@ -218,6 +218,7 @@ async function refreshScans() {
 const FALLBACK_PRESETS = [
   { name: "fast", label: "Fast", blurb: "12 views, 16 timesteps, half-resolution training. About 18 minutes.", eta_minutes: 18 },
   { name: "standard", label: "Standard", blurb: "24 views on one orbit, 30 timesteps, full resolution. About 40 minutes.", eta_minutes: 40, default: true },
+  { name: "wide", label: "Wide", blurb: "48 views on one orbit (7.5 degree spacing), 30 timesteps, full resolution. About 70 minutes.", eta_minutes: 70 },
   { name: "full", label: "Full", blurb: "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 90 minutes.", eta_minutes: 90 },
 ];
 

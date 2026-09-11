@@ -85,7 +85,7 @@ def job_summary(job_id: str) -> dict | None:
         "finished": state.get("finished"),
         "updated": state.get("updated"),
         "scan_id": state.get("scan_id") or (job.get("scan_id") if state.get("status") == "done" else None),
-        "eta_minutes": get_preset(job.get("preset")).get("eta_minutes") if job.get("preset") in ("fast", "standard", "full") else None,
+        "eta_minutes": get_preset(job.get("preset")).get("eta_minutes") if job.get("preset") in ("fast", "standard", "wide", "full") else None,
     }
 
 
