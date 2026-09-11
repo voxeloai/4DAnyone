@@ -7,9 +7,11 @@ per-timestep Spirula Studio training budget. Times are rough H100 figures for a 
 from __future__ import annotations
 
 PRESETS: dict[str, dict] = {
+    # eta_minutes measured on the H100 pod (2026-09-11): 24-view generation alone is ~24 min
+    # (GVHMR ~2 min, skeleton conditioning ~3 min, denoising ~6 min, VAE decode + H.264 publish ~6 min).
     "fast": {
         "label": "Fast",
-        "blurb": "12 views, 16 timesteps, half-resolution training. About 8 minutes.",
+        "blurb": "12 views, 16 timesteps, half-resolution training. About 18 minutes.",
         "views_per_layer": 12,
         "layer_pitches": [15],
         "timesteps": 16,
@@ -17,11 +19,11 @@ PRESETS: dict[str, dict] = {
         "cap_max": 150_000,
         "sh_degree": 0,
         "res_divisor": 2,
-        "eta_minutes": 8,
+        "eta_minutes": 18,
     },
     "standard": {
         "label": "Standard",
-        "blurb": "24 views on one orbit, 30 timesteps, full resolution. About 18 minutes.",
+        "blurb": "24 views on one orbit, 30 timesteps, full resolution. About 40 minutes.",
         "views_per_layer": 24,
         "layer_pitches": [15],
         "timesteps": 30,
@@ -29,11 +31,11 @@ PRESETS: dict[str, dict] = {
         "cap_max": 300_000,
         "sh_degree": 0,
         "res_divisor": 1,
-        "eta_minutes": 18,
+        "eta_minutes": 40,
     },
     "full": {
         "label": "Full",
-        "blurb": "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 45 minutes.",
+        "blurb": "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 90 minutes.",
         "views_per_layer": 16,
         "layer_pitches": [-10, 15, 35],
         "timesteps": 48,
@@ -41,7 +43,7 @@ PRESETS: dict[str, dict] = {
         "cap_max": 500_000,
         "sh_degree": 1,
         "res_divisor": 1,
-        "eta_minutes": 45,
+        "eta_minutes": 90,
     },
 }
 

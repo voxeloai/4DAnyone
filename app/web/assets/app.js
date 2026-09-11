@@ -216,9 +216,9 @@ async function refreshScans() {
 
 // ── boot ───────────────────────────────────────────────────────────────────
 const FALLBACK_PRESETS = [
-  { name: "fast", label: "Fast", blurb: "12 views, 16 timesteps, half-resolution training. About 8 minutes.", eta_minutes: 8 },
-  { name: "standard", label: "Standard", blurb: "24 views on one orbit, 30 timesteps, full resolution. About 18 minutes.", eta_minutes: 18, default: true },
-  { name: "full", label: "Full", blurb: "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 45 minutes.", eta_minutes: 45 },
+  { name: "fast", label: "Fast", blurb: "12 views, 16 timesteps, half-resolution training. About 18 minutes.", eta_minutes: 18 },
+  { name: "standard", label: "Standard", blurb: "24 views on one orbit, 30 timesteps, full resolution. About 40 minutes.", eta_minutes: 40, default: true },
+  { name: "full", label: "Full", blurb: "48 views on three pitch rings, 48 timesteps, view-dependent colour. About 90 minutes.", eta_minutes: 90 },
 ];
 
 // The RunPod proxy answers 404/timeouts for ~30 s after the API restarts; never let one failed
