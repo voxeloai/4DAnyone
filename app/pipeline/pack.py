@@ -34,16 +34,37 @@ def splat_transform_binary() -> str:
     raise FileNotFoundError("splat-transform not found (npm i -g @playcanvas/splat-transform)")
 
 
+_SOG_GPU_OK: bool | None = None  # None = untested this process
+
+
 def ply_to_sog(ply: Path, sog: Path, log) -> float:
+    """PLY -> SOG. SOG's spherical-harmonic compression is a k-means palette fit: on CPU it costs
+    ~9 min per 500k-gaussian SH1 frame (measured 2026-09-11), on the H100 (visible to node's WebGPU
+    through the NVIDIA Vulkan ICD written by bootstrap) it is seconds. Try the GPU adapter first and
+    fall back to CPU once per process if it is unusable. FDA_SPLAT_GPU=cpu forces CPU."""
+
+    global _SOG_GPU_OK
     started = time.monotonic()
-    # SOG compression can use a GPU adapter; headless pods have no usable one for node, so default to CPU.
-    cmd = [splat_transform_binary(), "-q", "-w", "-g", os.environ.get("FDA_SPLAT_GPU", "cpu"), str(ply), str(sog)]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0 or not sog.is_file():
-        log(proc.stdout[-2000:])
-        log(proc.stderr[-2000:])
-        raise RuntimeError(f"splat-transform failed for {ply.name} (exit {proc.returncode})")
-    return time.monotonic() - started
+    forced = os.environ.get("FDA_SPLAT_GPU")
+    devices = [forced] if forced else (["0", "cpu"] if _SOG_GPU_OK is not False else ["cpu"])
+    if not forced and _SOG_GPU_OK is True:
+        devices = ["0"]
+    last = None
+    for dev in devices:
+        cmd = [splat_transform_binary(), "-q", "-w", "-g", dev, "--max-workers", os.environ.get("FDA_SOG_WORKERS", "16"), str(ply), str(sog)]
+        proc = subprocess.run(cmd, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=3600)
+        if proc.returncode == 0 and sog.is_file() and sog.stat().st_size > 0:
+            if not forced and dev != "cpu":
+                _SOG_GPU_OK = True
+            return time.monotonic() - started
+        last = (dev, proc.returncode, proc.stdout[-1500:], proc.stderr[-1500:])
+        if not forced and dev != "cpu":
+            _SOG_GPU_OK = False
+            log(f"[pack] GPU SOG encode failed on adapter {dev} (exit {proc.returncode}); falling back to CPU for this process")
+    dev, code, out, err = last
+    log(out)
+    log(err)
+    raise RuntimeError(f"splat-transform failed for {ply.name} on {dev} (exit {code})")
 
 
 def read_ply_positions(ply: Path, max_points: int = 400_000) -> np.ndarray:
@@ -121,19 +142,28 @@ def pack_sequence(
     cameras: dict,
     source: dict,
     log,
+    progress=None,
 ) -> dict:
-    """Convert every PLY to SOG under scan_dir/frames and write manifest.json."""
+    """Convert every PLY to SOG under scan_dir/frames and write manifest.json.
+
+    ``progress(index, total, seconds_left_estimate)`` is called after every frame so the job
+    runner can publish pack progress (a 48-frame pack is minutes on GPU, hours on CPU)."""
 
     frames_dir = scan_dir / "frames"
     frames_dir.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     gaussians = []
     bytes_total = 0
+    encoded_secs: list[float] = []
     for index, ply in enumerate(plys, start=1):
         sog = frames_dir / f"frame_{index:04d}.sog"
         if not sog.is_file():
             secs = ply_to_sog(ply, sog, log)
+            encoded_secs.append(secs)
             log(f"[pack] frame {index}/{len(plys)}: {sog.name} {sog.stat().st_size / 1e6:.1f} MB in {secs:.1f}s")
+        if progress:
+            per = (sum(encoded_secs) / len(encoded_secs)) if encoded_secs else 0.0
+            progress(index, len(plys), per * (len(plys) - index))
         bytes_total += sog.stat().st_size
         if index == 1 or index == len(plys) or index % 8 == 0:
             xyz = read_ply_positions(ply)

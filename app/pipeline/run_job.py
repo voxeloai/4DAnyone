@@ -270,9 +270,13 @@ def main(job_id: str) -> int:
             "video": "source.mp4" if video.suffix.lower() == ".mp4" else video.name,
             **{k: info[k] for k in ("fps", "frames", "duration_seconds", "width", "height")},
         }
+        def pack_progress(index: int, total: int, seconds_left: float) -> None:
+            left = f", ~{seconds_left / 60:.1f} min left" if seconds_left > 0 else ""
+            ctx.set_state(progress=round(0.92 + 0.07 * index / max(1, total), 4), message=f"packed frame {index}/{total}{left}")
+
         manifest = pack_sequence(
             plys, staging, scan_id=scan_id, title=title, preset=preset, sequence_summary=summary,
-            result_dir=result_dir, cameras=cameras, source=source, log=ctx.log,
+            result_dir=result_dir, cameras=cameras, source=source, log=ctx.log, progress=pack_progress,
         )
         shutil.copyfile(video, staging / source["video"])
         manifest["job_id"] = job_id
