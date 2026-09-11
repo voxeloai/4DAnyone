@@ -11,7 +11,9 @@ import {
   FILLMODE_FILL_WINDOW, RESOLUTION_AUTO, DEVICETYPE_WEBGPU, DEVICETYPE_WEBGL2,
   createGraphicsDevice,
 } from "playcanvas";
-import { GSplatFlipbook } from "playcanvas/scripts/esm/gsplat/gsplat-flipbook.mjs";
+// Our fork of the engine's official gsplat-flipbook script: same streaming design, plus retries and
+// skip-on-failure so a flaky proxy cannot deadlock playback (see assets/gsplat-flipbook.mjs).
+import { GSplatFlipbook } from "/assets/gsplat-flipbook.mjs";
 import { CameraControls } from "playcanvas/scripts/esm/camera-controls.mjs";
 
 const $ = (id) => document.getElementById(id);
@@ -174,7 +176,9 @@ async function main() {
   flipbook.endFrame = seq.end || seq.count;
   flipbook.playMode = "loop";
   flipbook.playing = true;
-  flipbook.preloadCount = IS_MOBILE ? 4 : Math.min(10, seq.count);
+  flipbook.preloadCount = Math.min(IS_MOBILE ? 3 : 5, Math.max(1, seq.count - 1));
+  let failures = 0;
+  flipbook.onError = (url, attempts) => { failures++; if (attempts === 1) console.warn("frame load failed, retrying", url); if (failures === 3) toast("Slow link: retrying frames"); };
   player.setLocalEulerAngles(-90, 0, 0);
   app.root.addChild(player);
   window.__pc = { app, camera, controls, player, flipbook, manifest };
@@ -213,8 +217,8 @@ async function main() {
   let firstShown = false;
   let framesSeen = 0;
   app.on("update", (dt) => {
-    const loaded = flipbook.currentAsset?.loaded;
-    const buffered = flipbook.preloadedFrames.filter((f) => f.asset.loaded).length;
+    const loaded = flipbook.currentAsset?.loaded && flipbook.currentAsset?.resource;
+    const buffered = flipbook.loadedCount();
     if (!firstShown) {
       if (loaded) {
         firstShown = true;
