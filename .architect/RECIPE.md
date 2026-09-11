@@ -61,6 +61,12 @@ After a stop/start: re-run `bootstrap.sh` (apt + ICD are ephemeral; everything e
   (GVHMR preprocess 115 s, pose conditioning 189 s, RCP denoise 96 s + publish 100 s, target denoise
   267 s + decode/publish 252 s; peak VRAM 25.8 GB) · export 30 timesteps 222 s · train 30 × 21 s = 10.7 min
   (2500 steps, 300k cap reached) · pack 85 s · scan 114 MB (3.8 MB/frame) · **~40 min end to end**.
+- **wide (48 views, one ring, 30 timesteps):** generation ~33 min · export ~6 min · train ~11 min · pack ~1.5 min → **~52 min**, 115 MB.
+- **full (48 views on 3 rings, 48 timesteps, SH1, 500k cap):** generation 34 min · export 9 min · train 48 × 38 s = 30 min ·
+  pack **7 h on CPU** (SH1 k-means palette fit ≈ 540 s/frame) vs **7 s/frame on the H100** → ~6 min → **~80 min** once
+  SOG encodes on the GPU adapter (`pack.py` now tries `-g 0` first; `splat-transform --list-gpus` sees the H100 through
+  the Vulkan ICD). Generation cost tracks view COUNT, not ring layout (wide ≈ full for 48 views). SH0 frames were
+  fine on CPU (~3 s); only SH≥1 needs the GPU.
 - Sequence export: `app/pipeline/export_sequence.py` decodes each target video once; BiRefNet masks +
   visual hull per timestep; writes RGB `images/`, binary `masks/`, `sparse_pcd.ply`, `transforms.json`
   (+`mask_path`) — the upstream exporter's layout, so nerfstudio/gsplat trainers also work.
