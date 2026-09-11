@@ -72,6 +72,10 @@ After a stop/start: re-run `bootstrap.sh` (apt + ICD are ephemeral; everything e
 4. RunPod HTTP proxy fails ~30–40 % of concurrent requests → Cloudflare quick tunnel for the demo.
 5. `tar --no-same-owner` on the network volume; `splat-transform -g cpu` (no GPU adapter for node).
 6. `git pull` on the pod refuses if files were scp'd by hand; `git checkout -- .` first.
+7. GVHMR's `hmr4d/utils/body_model/body_model.py` has a stray `from turtle import forward` → imports
+   tkinter, which the venv's Python lacks (`apt install python3.11-tk` hung on this image). Fixed with
+   `turtle.py` at the repo root: 4DAnyone launches its GVHMR workers with `PYTHONPATH=<repo root>`, so
+   the shim shadows the stdlib module only there. Keep it.
 
 ## Cleanup
 

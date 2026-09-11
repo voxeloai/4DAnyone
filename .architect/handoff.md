@@ -3,7 +3,7 @@
 **Date:** 2026-09-11
 **Closed by:** architect (drove the pod directly over SSH + tmux)
 **Cycle:** 1
-**Status:** `in-progress` — everything built and tested except the 4DAnyone generation stage, which is blocked on the licence-gated SMPL-X body model.
+**Status:** `in-progress` — everything built and tested; SMPL-X installed 2026-09-11 07:12 UTC (Vlad's licensed download); first real jobs running (dancer `v2m55dscqk` + three fashion clips queued). The GVHMR tkinter import failure is fixed with the `turtle.py` shim.
 
 ## Summary
 
