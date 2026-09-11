@@ -80,7 +80,16 @@ def probe_video(path: Path) -> dict:
         if frames <= 0:
             frames = sum(1 for _ in container.decode(stream))
         width, height = stream.codec_context.width, stream.codec_context.height
+        # Phones store orientation as a display matrix (PyAV exposes it as frame.rotation), older files
+        # as a 'rotate' tag. 4DAnyone's decoder honours both; mirror that here so the portrait check is right.
         rotation = int(round(float(stream.metadata.get("rotate", "0") or 0))) % 360
+        try:
+            first = next(iter(container.decode(stream)))
+            frame_rotation = getattr(first, "rotation", 0) or 0
+            if float(frame_rotation) != 0.0:
+                rotation = int(round(float(frame_rotation))) % 360
+        except Exception:  # noqa: BLE001 - orientation is advisory only
+            pass
     if rotation in (90, 270):
         width, height = height, width
     return {
