@@ -57,6 +57,10 @@ After a stop/start: re-run `bootstrap.sh` (apt + ICD are ephemeral; everything e
   sequence), compressed densification schedule (refine 12 %–80 % of the run, every 50 steps, growth 1.15,
   init 20 % of cap).
 - Measured (synthetic, 24 views @ 704×1280, H100): 2000 steps ≈ 16 s/timestep; SOG 3.9 MB @ 300k gaussians.
+- **Measured on a real clip (standard preset, pexels 2785536, 2026-09-11):** generation 23.6 min
+  (GVHMR preprocess 115 s, pose conditioning 189 s, RCP denoise 96 s + publish 100 s, target denoise
+  267 s + decode/publish 252 s; peak VRAM 25.8 GB) · export 30 timesteps 222 s · train 30 × 21 s = 10.7 min
+  (2500 steps, 300k cap reached) · pack 85 s · scan 114 MB (3.8 MB/frame) · **~40 min end to end**.
 - Sequence export: `app/pipeline/export_sequence.py` decodes each target video once; BiRefNet masks +
   visual hull per timestep; writes RGB `images/`, binary `masks/`, `sparse_pcd.ply`, `transforms.json`
   (+`mask_path`) — the upstream exporter's layout, so nerfstudio/gsplat trainers also work.
